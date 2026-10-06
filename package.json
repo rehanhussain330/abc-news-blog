@@ -1,0 +1,33 @@
+{
+  "name": "news-cms-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.5",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-minify-html-terser": "^1.0.2",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.4",
+    "mongoose-paginate-v2": "^1.9.5",
+    "multer": "^2.4.0",
+    "node-cache": "^5.1.2",
+    "nodemon": "^3.1.14",
+    "slugify": "^1.6.9",
+    "tabulator": "^0.2.40",
+    "tabulator-tables": "^6.6.1"
+  }
+}

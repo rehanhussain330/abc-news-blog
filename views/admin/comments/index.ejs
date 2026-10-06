@@ -1,0 +1,180 @@
+<link rel="stylesheet" href="/tabulator/css/tabulator.min.css"> 
+<div id="admin-content">
+      <div class="container">
+          <div class="row">
+              <div class="col-md-12">
+                  <h1 class="admin-heading"><i class="fa fa-comments"></i> Comments Management</h1>
+              </div>
+              <div class="col-md-12">
+                 
+                <div id="commentTable"></div>
+                 
+              </div>
+          </div>
+      </div>
+  </div>
+
+
+<!-- Tabulator JS -->
+<script src="/tabulator/js/tabulator.min.js"></script>
+
+<script>
+
+  
+  const comments = <%- JSON.stringify(comments) %>;
+
+    const table = new Tabulator("#commentTable", {
+        data: comments,
+
+        layout: "fitColumns",
+
+        pagination: true,
+        paginationSize: 10,
+        paginationSize: 10,
+        paginationSizeSelector:[5,10,25,50,100],
+        columns: [
+            {
+                title:"S.NO.",
+                formatter:"rownum",
+                width:100,
+                hozAlign:"center"
+            },
+            {
+                title: "Article",
+                field: "article.title",
+                headerFilter: "input"
+            },
+            {
+                title: "Comment",
+                field: "content",
+                headerFilter: "input"
+            },
+            {
+                title: "Name",
+                field: "name",
+                headerFilter: "input"
+            },
+             {
+                title: "Status",
+                field: "status",
+                headerFilter: "input" 
+            },
+            {
+              title:"Actions",
+              formatter: function(cell, formatterParams, onRendered){
+                const comment = cell.getData()
+                return `
+                <button onClick="viewComment('${comment._id}')" class="btn btn-sm btn-success mt-2">View</button>
+                <button class="btn btn-sm btn-danger delete-comment mt-2" onClick="deleteComment('${comment._id}')">Delete</button>
+                `
+              }
+            }
+        ]
+    });
+
+
+    document.addEventListener('change', async function(event){
+      const select = event.target.closest('.comment-status-select')
+      if (!select) return
+
+      const id = select.dataset.commentId
+      const status = select.value
+
+      try {
+        const response = await fetch(`/admin/update-comment-status/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+          alert(data.message || 'Unable to update comment status')
+          select.value = select.dataset.previousValue || 'pending'
+          return
+        }
+
+        select.dataset.previousValue = status
+        alert(data.message)
+        window.location.reload()
+      } catch (error) {
+        console.error(error)
+        alert('Unable to update comment status')
+      }
+    })
+
+    document.addEventListener('focusin', function(event){
+      const select = event.target.closest('.comment-status-select')
+      if (select) {
+        select.dataset.previousValue = select.value
+      }
+    })
+
+
+    function viewComment(id){
+      const comment = comments.find(comment => comment._id === id)
+      if (!comment) {
+        return
+      }
+
+      const modalElement = document.getElementById('commentModal')
+      const modalBody = document.getElementById('commentModalBody')
+      const modalLabel = document.getElementById('commentModalLabel')
+
+      if (!modalElement || !modalBody || !modalLabel || !window.bootstrap) {
+        return
+      }
+
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement)
+      modalLabel.innerText = `Comment by ${comment.name}`
+      modalBody.innerHTML = `<p><b>Message</b>: ${comment.content}</p>
+      <select class="form-select form-select-sm comment-status-select" data-comment-id="${comment._id}" aria-label="Update comment status">
+          <option value="pending" ${comment.status === 'pending' ? 'selected' : ''}>Pending</option>
+          <option value="approved" ${comment.status === 'approved' ? 'selected' : ''}>Approved</option>
+          <option value="rejected" ${comment.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+      </select>
+      `
+      modal.show()
+    }
+
+    async function deleteComment(id){
+      try{
+        if(confirm("Are you sure you want to delete this comment ?")){
+          const response = await fetch(`/admin/delete-comment/${id}`, {
+            method:'delete'
+          })
+          if(response.ok){
+            window.location.reload()
+          }
+
+          if(response.status == 400){
+            const data = await response.json()
+            alert(data.message)
+          }
+        }
+      }catch(err){
+        console.log(err)
+      }
+    }
+
+
+</script>
+
+
+<div class="modal" id="commentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="commentModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="commentModalBody">
+        <p>Modal body text goes here.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

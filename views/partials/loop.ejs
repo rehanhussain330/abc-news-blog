@@ -1,0 +1,65 @@
+<% news.data.forEach(function(newsItem){ %>
+    <div class="post-content">
+        <div class="row">
+        <div class="col-md-4">
+            <a class="post-img" href="/single/<%= newsItem._id %>"><img src="/uploads/<%= newsItem.image %>" alt=""/></a>
+        </div>
+        <div class="col-md-8">
+            <div class="inner-content clearfix">
+                <h3><a href='/single/<%= newsItem._id %>'><%= newsItem.title %></a></h3>
+                <div class="post-information">
+                <span>
+                    <i class="fa fa-tags" aria-hidden="true"></i>
+                    <a href='/category/<%= newsItem.category.slug %>'><%= newsItem.category.name %></a>
+                </span>
+                <span>
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                    <a href='/author/<%= newsItem.author._id %>'><%= newsItem.author.fullname %></a>
+                </span>
+                <span>
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                    <%= new Date(newsItem.createdAt).toLocaleDateString('en-GB',{ day:'numeric', month:'short', year:'numeric' }) %>
+                </span>
+                </div>
+                <p class="description">
+                    <%= newsItem.content.replace(/<[^>]*>/g, '').substring(0, 30) + '...' %>
+                </p>
+                <a class='read-more pull-right' href='/single/<%= newsItem._id %>'>read more</a>
+            </div>
+        </div>
+        </div>
+    </div>
+<% }) %>
+
+
+<%  
+
+function buildQuery(query, page){
+    const params = new URLSearchParams(query)
+    params.set('page', page)
+    return '?' + params.toString()
+}
+
+%>
+
+<% if (news && news.totalPages > 1) { %>
+    <nav aria-label="News pagination">
+        <ul class="pagination">
+            <li class="page-item <%= news.hasPrevPage ? '' : 'disabled' %>">
+                <a class="page-link" href="<%= buildQuery(query, news.prevPage) %>">Previous</a>
+            </li>
+
+            <% for (let i = 1; i <= news.totalPages; i++) { %>
+                <li class="page-item <%= (i === news.currentPage) ? 'active' : '' %>">
+                    <a class="page-link" href="<%= buildQuery(query, i) %>">
+                        <%= i %>
+                    </a>
+                </li>
+            <% } %>
+
+            <li class="page-item <%= news.hasNextPage ? '' : 'disabled' %>">
+                <a class="page-link" href="<%= buildQuery(query, news.nextPage) %>">Next</a>
+            </li>
+        </ul>
+    </nav>
+<% } %>
